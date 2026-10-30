@@ -1,69 +1,180 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import { useState, useEffect } from "react";
+import LoginPage, { Role } from "@/components/LoginPage";
+import Sidebar, { NavId } from "@/components/Sidebar";
+import Dashboard, { INITIAL_STUDENTS } from "@/components/Dashboard";
+import { StudentRecord } from "@/components/StudentForm";
+import AIAssistantDrawer from "@/components/AIAssistantDrawer";
+import { IconMenu, IconBot, IconSparkles } from "@/components/Icons";
+
+interface Session {
+  name: string;
+  role: Role;
+}
+
+const NAV_TITLES: Record<NavId, string> = {
+  overview: "Dashboard Overview",
+  students: "Student Health Records",
+  analytics: "Health & BMI Analytics",
+  settings: "System & API Settings",
+};
 
 export default function Home() {
+  const [session, setSession] = useState<Session | null>(() => {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("caresphere_session");
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch {
+          // ignore
+        }
+      }
+    }
+    return null;
+  });
+
+  const [activeNav, setActiveNav] = useState<NavId>("overview");
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
+
+  // Synchronized student state
+  const [students, setStudents] = useState<StudentRecord[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("caresphere_students");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          // ignore
+        }
+      }
+    }
+    return INITIAL_STUDENTS;
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("caresphere_students", JSON.stringify(students));
+    }
+  }, [students]);
+
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.body.style.overflow = mobileSidebarOpen ? "hidden" : "";
+    }
+    return () => {
+      if (typeof document !== "undefined") {
+        document.body.style.overflow = "";
+      }
+    };
+  }, [mobileSidebarOpen]);
+
+  const handleLogin = (role: Role, name: string) => {
+    const s = { role, name };
+    setSession(s);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("caresphere_session", JSON.stringify(s));
+    }
+    setActiveNav("overview");
+  };
+
+  const handleLogout = () => {
+    setSession(null);
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("caresphere_session");
+    }
+    setActiveNav("overview");
+    setAiAssistantOpen(false);
+  };
+
+  if (!session) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="app-shell">
+      <Sidebar
+        active={activeNav}
+        onNav={id => {
+          setActiveNav(id);
+          setMobileSidebarOpen(false);
+        }}
+        userName={session.name}
+        userRole={session.role}
+        onLogout={handleLogout}
+        isOpenMobile={mobileSidebarOpen}
+        onCloseMobile={() => setMobileSidebarOpen(false)}
+        onOpenAssistant={() => setAiAssistantOpen(true)}
+      />
+
+      <div className="main-wrapper">
+        {/* Modern Clean Topbar */}
+        <header className="topbar">
+          <div className="topbar-left">
+            <button
+              type="button"
+              className="mobile-menu-btn"
+              onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+              aria-label="Toggle navigation menu"
+            >
+              <IconMenu size={20} />
+            </button>
+            <div className="topbar-page-title">{NAV_TITLES[activeNav]}</div>
+          </div>
+
+          <div className="topbar-right">
+            <button
+              type="button"
+              className="topbar-ai-btn"
+              onClick={() => setAiAssistantOpen(prev => !prev)}
+              title="Open AI Health Assistant"
+            >
+              <IconSparkles size={14} />
+              <span>AI Advisor</span>
+            </button>
+
+            <div className="status-indicator">
+              <span className="status-dot" />
+              <span>AI Live</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Dashboard Views */}
+        <Dashboard
+          userName={session.name}
+          userRole={session.role}
+          activeNav={activeNav}
+          onNavigate={setActiveNav}
+          students={students}
+          setStudents={setStudents}
+          onOpenAssistant={() => setAiAssistantOpen(true)}
         />
-        <div className={styles.intro}>
-          <h1>
-            To get started, edit the{" "}
-            <code className={styles.code}>page.tsx</code> file.
-          </h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
+
+      {/* ── Floating AI Assistant Action Button (Bottom of Pages) ── */}
+      <button
+        type="button"
+        id="floating-ai-trigger"
+        className={`floating-ai-fab ${aiAssistantOpen ? "active" : ""}`}
+        onClick={() => setAiAssistantOpen(prev => !prev)}
+        title="Ask CareSphere Health AI Assistant"
+        aria-label="Toggle Health AI Assistant"
+      >
+        <span className="fab-icon-glow" />
+        <IconBot size={22} className="fab-bot-icon" />
+        <span className="fab-text">Ask Health AI</span>
+        <span className="fab-badge">Llama 3.3</span>
+      </button>
+
+      {/* ── AI Assistant Chat Drawer ── */}
+      <AIAssistantDrawer
+        isOpen={aiAssistantOpen}
+        onClose={() => setAiAssistantOpen(false)}
+        students={students}
+      />
     </div>
   );
 }

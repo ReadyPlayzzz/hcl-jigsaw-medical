@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CareSphere
 
-## Getting Started
+CareSphere is a school health dashboard demo made with Next.js, React and TypeScript.
 
-First, run the development server:
+## Start the demo
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Install Node.js on the computer.
+2. Open a terminal in this folder.
+3. Run `npm install` once.
+4. Run `npm run dev`.
+5. Open `http://localhost:3000` in a browser.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How the demo works
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `src/app/page.tsx` contains the screen, sample students, search and pop-up messages.
+- `src/app/globals.css` contains the colours, spacing and phone-friendly layout.
+- `src/app/layout.tsx` contains the browser tab name and the shared page setup.
+- The student list is a small array near the top of `page.tsx`. Search checks the student's name, class and health note.
+- The buttons open simple pop-up messages. The search and health-alert tabs work with the sample list.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Before using this at a school
 
-## Learn More
+This is only a front-end demonstration. It uses made-up student names and does not save information. Google sign-in, a protected database, school access rules, real emergency contacts and the AI helper have not been connected. Do not enter real student health information into this demo.
 
-To learn more about Next.js, take a look at the following resources:
+Google sign-in should only allow accounts approved by the school. The AI helper should share general information and help find care; it should never diagnose or tell students what medicine to take. In an emergency, follow the school's response plan and contact local emergency services.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Easy way to explain the code
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+“The student details are stored in a short list. The search box checks that list and shows matching students. Buttons open small messages. The colours and layout are kept in a separate style file. Right now it is a safe demo with pretend information; the school login and private storage come later.”
